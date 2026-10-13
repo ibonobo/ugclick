@@ -470,3 +470,10 @@ return
 4. Then build up to the full sequence
 
 Getting the coordinates was not as simple for me : I had to run the 64 bit version of AutoHotKey which did not go into the tray, but either way, I had to switch back and forth between the app and the game to see the coordinates; I could have maybe used a power toy to force the AutoHotKey window to be on top, but I only thought of that post factum. I took photos with my phone and saved them in https://photos.app.goo.gl/BQdkK21Jo62EeESR6
+This shows the following screen coordinates:
+1. "tokens replenished" - it doesn't always show: 964, 915
+2. "claim" - 1790, 798
+3. "store" - 269, 373
+4. "quit" (?) - 87, 101
+5. yes, quit - 1074, 321
+Let's now implement the main ones and try the script.
