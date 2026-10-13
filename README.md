@@ -2,7 +2,7 @@
 ways to play back a macro (mouse clicks) in a Unity game
 this is vibecoded and I'm showing the convo in here (Windows Hermes with free model)
 
-Having previously tried Anthropic's models, I thought this was going to be just as easy with free models; alas, it was not.
+Having previously tried Anthropic's models, I thought this was going to be just as easy with free models; alas, it was not. I also replaced the actual name of the game with "GAME" as much as possible, as I am more interested in the procedure in general rather than this game in particular.
 
 ## Intro with AI
 
@@ -37,13 +37,6 @@ if (ErrorLevel = 0)
 Process, Close, Game.exe
 Process, Close, steam.exe
 Then schedule it daily via Task Scheduler (schtasks or GUI).
-
-The Steam app is **GAME: Global Domination** (appid `1128810`).
-
-Launch command:
-```bat
-steam://rungameid/1128810
-```
 
 Now the hard part — clicking buttons **inside the game**. Since it's a Unity-based game, standard Windows automation won't see internal buttons. You have three real options:
 
@@ -476,4 +469,4 @@ return
 3. Press F1 - you should see the message
 4. Then build up to the full sequence
 
-Which approach would you prefer to try first? I can help you generate the exact script once you have coordinates or button images.
+Getting the coordinates was not as simple for me : I had to run the 64 bit version of AutoHotKey which did not go into the tray, but either way, I had to switch back and forth between the app and the game to see the coordinates; I could have maybe used a power toy to force the AutoHotKey window to be on top, but I only thought of that post factum. I took photos with my phone and saved them in https://photos.app.goo.gl/BQdkK21Jo62EeESR6
