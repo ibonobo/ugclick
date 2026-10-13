@@ -477,3 +477,10 @@ This shows the following screen coordinates:
 4. "quit" (?) - 87, 101
 5. yes, quit - 1074, 321
 Let's now implement the main ones and try the script.
+
+first run error:
+  ```ahk
+Text:	#(!Shift):: ToolTip("Mouse: " . Format("{}, {}", MouseGetPosX(), MouseGetPosY())…
+Line:	6
+File:	Path..GameClicker.ahk
+  ```
