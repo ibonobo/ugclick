@@ -11,17 +11,29 @@ BUTTON_DIR := A_ScriptDir "\buttons\"
 
 ; Button images clicked in order (create these in buttons/)
 BUTTON_SEQUENCE := [
-    "start.png",
+    "start_full.png",
     "claim.png",
+;    "confirm.png"
 ]
 
 ; Timeouts (seconds)
-WAIT_STEAM_SEC := 60      ; wait for Steam to be ready
+WAIT_STEAM_SEC := 60      ; wait for Steam process to be ready
 WAIT_RISK_SEC  := 180     ; Risk update phase can take minutes
 WAIT_BUTTON_SEC:= 60      ; wait for each main-menu button to appear
 OK_HUNT_SEC    := 10      ; how long to hunt for optional OK button
 CLICK_DELAY_MS := 3000    ; pause between clicks
 ; =================================================
+
+; Wait until a process exists (polls every second)
+WaitForProcess(processName, seconds) {
+    deadline := A_TickCount + seconds * 1000
+    while (A_TickCount < deadline) {
+        if ProcessExist(processName)
+            return ProcessExist(processName)  ; returns PID
+        Sleep(1000)
+    }
+    return 0
+}
 
 ; Wait until a window belonging to a process exists (polls every second)
 WaitForWindow(processName, seconds) {
@@ -38,7 +50,9 @@ WaitForWindow(processName, seconds) {
 ClickImage(imagePath, seconds) {
     deadline := A_TickCount + seconds * 1000
     while (A_TickCount < deadline) {
-        fx := 0, fy := 0, ErrorLevel := 1
+        fx := 0
+        fy := 0
+        ErrorLevel := 1
         ImageSearch fx, fy, 0, 0, A_ScreenWidth, A_ScreenHeight, imagePath
         if (ErrorLevel = 0) {
             Click(fx, fy)
@@ -51,17 +65,19 @@ ClickImage(imagePath, seconds) {
 
 Main() {
     ; --- 1. Launch Steam silently (suppresses store/deals popups) ---
-    if !WinExist("ahk_exe steam.exe") {
+    ; Steam -silent runs without a window (tray only), so wait for PROCESS
+    if !ProcessExist("Steam.exe") {
         Run(STEAM_EXE . " -silent")
+        ; Give Steam time to initialize
+        Sleep(3000)
     }
-    steamId := WaitForWindow("steam.exe", WAIT_STEAM_SEC)
-    if (!steamId) {
-        MsgBox("Steam failed to start within " . WAIT_STEAM_SEC . " seconds")
+    steamPid := WaitForProcess("Steam.exe", WAIT_STEAM_SEC)
+    if (!steamPid) {
+        MsgBox("Steam process failed to start within " . WAIT_STEAM_SEC . " seconds")
         ExitApp()
     }
-    WinHide("ahk_exe steam.exe")
 
-    ; --- 2. Launch Risk ---
+    ; --- 2. Launch Risk via steam:// protocol (works without Steam window) ---
     Run("steam://rungameid/" . RISK_APPID)
 
     ; --- 3. Wait for Risk window to appear (covers long update phase) ---
@@ -80,7 +96,9 @@ Main() {
     if FileExist(okFile) {
         deadline := A_TickCount + OK_HUNT_SEC * 1000
         while (A_TickCount < deadline) {
-            okX := 0, okY := 0, ErrorLevel := 1
+            okX := 0
+            okY := 0
+            ErrorLevel := 1
             ImageSearch okX, okY, 0, 0, A_ScreenWidth, A_ScreenHeight, okFile
             if (ErrorLevel = 0) {   ; found it
                 Click(okX, okY)
@@ -109,7 +127,7 @@ Main() {
     ; --- 6. Close everything ---
     ProcessClose("RISK.exe")
     Sleep(2000)
-    ProcessClose("steam.exe")
+    ProcessClose("Steam.exe")
 
     MsgBox("Daily sequence complete!")
 }
