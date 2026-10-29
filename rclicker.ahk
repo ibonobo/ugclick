@@ -50,11 +50,7 @@ WaitForWindow(processName, seconds) {
 ClickImage(imagePath, seconds) {
     deadline := A_TickCount + seconds * 1000
     while (A_TickCount < deadline) {
-        fx := 0
-        fy := 0
-        ErrorLevel := 1
-        ImageSearch fx, fy, 0, 0, A_ScreenWidth, A_ScreenHeight, imagePath
-        if (ErrorLevel = 0) {
+        if ImageSearch(&fx, &fy, 0, 0, A_ScreenWidth, A_ScreenHeight, imagePath) {
             Click(fx, fy)
             return true
         }
@@ -62,7 +58,6 @@ ClickImage(imagePath, seconds) {
     }
     return false
 }
-
 Main() {
     ; --- 1. Launch Steam silently (suppresses store/deals popups) ---
     ; Steam -silent runs without a window (tray only), so wait for PROCESS
@@ -96,20 +91,14 @@ Main() {
     if FileExist(okFile) {
         deadline := A_TickCount + OK_HUNT_SEC * 1000
         while (A_TickCount < deadline) {
-            okX := 0
-            okY := 0
-            ErrorLevel := 1
-            ImageSearch okX, okY, 0, 0, A_ScreenWidth, A_ScreenHeight, okFile
-            if (ErrorLevel = 0) {   ; found it
+            if ImageSearch(&okX, &okY, 0, 0, A_ScreenWidth, A_ScreenHeight, okFile) {
                 Click(okX, okY)
-                Sleep(1000)          ; let dialog dismiss
+                Sleep(1000)   ; let dialog dismiss
                 break
             }
             Sleep(1000)
         }
-        ; If loop ends without finding, script simply continues
     }
-
     ; --- 5. Main button sequence (image-based clicking) ---
     for index, btnFile in BUTTON_SEQUENCE {
         imgPath := BUTTON_DIR . btnFile
