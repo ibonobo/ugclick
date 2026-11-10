@@ -50,14 +50,59 @@ WaitForWindow(processName, seconds) {
 ClickImage(imagePath, seconds) {
     deadline := A_TickCount + seconds * 1000
     while (A_TickCount < deadline) {
-        if ImageSearch(&fx, &fy, 0, 0, A_ScreenWidth, A_ScreenHeight, imagePath) {
-            Click(fx, fy)
-            return true
+        TryClickOk()
+        if FindAndClick(imagePath) {
+            Sleep(1500)
+            ; if the button is gone, the click worked; otherwise loop and click again
+            if !ImageSearch(&vx, &vy, 0, 0, A_ScreenWidth, A_ScreenHeight, "*20 " . imagePath)
+                return true
         }
         Sleep(2000)
     }
     return false
 }
+
+; ================= start Claude fix 261108 =================
+; Size of an image file in pixels
+GetImageSize(path, &w, &h) {
+    g := Gui("-DPIScale")
+    pic := g.Add("Picture", , path)
+    pic.GetPos(, , &w, &h)
+    g.Destroy()
+}
+
+; Hover first, then press and release with pauses (Unity ignores instant clicks)
+ClickAt(x, y) {
+    MouseMove(x - 5, y - 5)
+    Sleep(150)
+    MouseMove(x, y)
+    Sleep(300)
+    Click("Down")
+    Sleep(120)
+    Click("Up")
+}
+
+; Find an image and click its center; returns true if found and clicked
+FindAndClick(imagePath) {
+    if ImageSearch(&fx, &fy, 0, 0, A_ScreenWidth, A_ScreenHeight, "*20 " . imagePath) {
+        GetImageSize(imagePath, &w, &h)
+        ClickAt(fx + w // 2, fy + h // 2)
+        return true
+    }
+    return false
+}
+
+; Click the optional OK button if it is on screen
+TryClickOk() {
+    okFile := BUTTON_DIR . "ok_button.png"
+    if FileExist(okFile) && FindAndClick(okFile) {
+        Sleep(1000)
+        return true
+    }
+    return false
+}
+; ================= endClaude fix 261108 =================
+
 Main() {
     ; --- 1. Launch Steam silently (suppresses store/deals popups) ---
     ; Steam -silent runs without a window (tray only), so wait for PROCESS
@@ -87,17 +132,11 @@ Main() {
     Sleep(2000)   ; brief settle after maximize
 
     ; --- 4. Optional OK button: click only if it pops up ---
-    okFile := BUTTON_DIR . "ok_button.png"
-    if FileExist(okFile) {
-        deadline := A_TickCount + OK_HUNT_SEC * 1000
-        while (A_TickCount < deadline) {
-            if ImageSearch(&okX, &okY, 0, 0, A_ScreenWidth, A_ScreenHeight, okFile) {
-                Click(okX, okY)
-                Sleep(1000)   ; let dialog dismiss
-                break
-            }
-            Sleep(1000)
-        }
+    deadline := A_TickCount + OK_HUNT_SEC * 1000
+    while (A_TickCount < deadline) {
+        if TryClickOk()
+            break
+        Sleep(1000)
     }
     ; --- 5. Main button sequence (image-based clicking) ---
     for index, btnFile in BUTTON_SEQUENCE {
