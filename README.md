@@ -281,6 +281,24 @@ start "" "GAME.exe"
 - Action: `C:\path\launch_GAME.bat`
 - The mod auto-clicks and calls `Application.Quit()` → game closes → Steam stays running
 
+***More details***
+Use Windows Task Scheduler with a “run if missed” setup, plus a small once-per-day guard in the script. I haven’t tested this on your machine, so check the first run by hand.
+
+1. Create the task (Task Scheduler → Create Task, not “Basic Task”)
+
+- General: select Run only when user is logged on. This matters because ImageSearch and clicking need a real, unlocked desktop. “Run whether user is logged on or not” runs in a hidden session and won’t work.
+- Triggers: add two:
+    Daily at a time you’re usually at the laptop.
+    At log on, with a delay of 2 minutes so Wi-Fi and Steam can settle.
+- Actions: Start a program.
+- Program: C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe (check your install path)
+- Arguments: "C:\path\to\rclicker.ahk"
+- Start in: the script’s folder, so buttons\ resolves correctly (it uses A_ScriptDir, so this is just a safety net).
+- Conditions: uncheck Start the task only if the computer is on AC power if you want it to run on battery.
+- Settings:
+    Check Run task as soon as possible after a scheduled start is missed. This is what handles the laptop being off at the scheduled time.
+    Set If the task is already running to Do not start a new instance. Your script has #SingleInstance Force, so a second launch would otherwise kill the first run mid-sequence.
+
 **To close Steam too:** Add a second task 5min later:
 ```bat
 taskkill /im steam.exe /f
