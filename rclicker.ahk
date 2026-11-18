@@ -61,7 +61,6 @@ ClickImage(imagePath, seconds) {
     }
     return false
 }
-
 ; ================= start Claude fix 261108 =================
 ; Size of an image file in pixels
 GetImageSize(path, &w, &h) {
@@ -104,6 +103,12 @@ TryClickOk() {
 ; ================= endClaude fix 261108 =================
 
 Main() {
+    ; --- 0. 2x daily run guard (Task Scheduler)
+    lastRunFile := A_ScriptDir "\lastrun.txt"
+    gameDay := FormatTime(DateAdd(A_NowUTC, -17, "Hours"), "yyyyMMdd")
+    if FileExist(lastRunFile) && Trim(FileRead(lastRunFile)) = gameDay
+        ExitApp()
+
     ; --- 1. Launch Steam silently (suppresses store/deals popups) ---
     ; Steam -silent runs without a window (tray only), so wait for PROCESS
     if !ProcessExist("Steam.exe") {
@@ -157,7 +162,9 @@ Main() {
     Sleep(2000)
     ProcessClose("Steam.exe")
 
-    MsgBox("Daily sequence complete!")
+    ; --- 7. 2x run guard ---
+    try FileDelete(lastRunFile)
+    FileAppend(gameDay, lastRunFile)
 }
 
 Main()   ; runs when script starts
